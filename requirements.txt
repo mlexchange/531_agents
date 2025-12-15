@@ -1,7 +1,9 @@
-black
-flake8
-mkdocs
-mkdocs-material
-mkdocs-mermaid2-plugin
-pre-commit
-pytest
+# Project Dependencies
+# Add your application-specific dependencies here
+
+# Framework dependency
+osprey-framework>=0.8.1
+tiled
+stamina
+entrypoints
+dask
