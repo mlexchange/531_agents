@@ -19,12 +19,8 @@ osprey chat
 ## Project Structure
 
 ```
-bl531
-    ├── api_test.py      # Scripts for testing API connections
-    ├── BL531API.py      # API wrapper for the Bluesky queue server
-    ├── BL531DataAPI.py  # API wrapper for the Tiled data server client
-    ├── capabilities/    # Directory for all Osprey agent capabilities
-    └── context_classes.py # Data classes for context management
+<!-- TREE START -->
+<!-- TREE END -->
 ```
 ## Development
 
