@@ -435,6 +435,10 @@ async def run_all_tests():
 
         traceback.print_exc()
 
+    finally:
+        teardown_mock_registry()
+        # Cleanup
+
 
 if __name__ == "__main__":
     try:
