@@ -1,3 +1,4 @@
+---
 # Project Information
 site_name: ALS Computing MkDocs Template
 site_description: ALS Computing MkDocs Template
@@ -9,22 +10,22 @@ edit_uri: blob/main/docs/
 
 # Navigation
 nav:
-- Home: index.md
-- About: about.md
-- Test: test.md
+  - Home: index.md
+  - About: about.md
+  - Test: test.md
 
 # Theme and Plugins
 theme:
   name: material
   custom_dir: overrides
 extra_css:
-- assets/als_style.css
+  - assets/als_style.css
 extra:
   favicon: overrides/assets/images/favicon.png
   social:
-  - icon: fontawesome/brands/github
-    link: https://github.com/als-computing
+    - icon: fontawesome/brands/github
+      link: https://github.com/als-computing
 
 plugins:
-- mermaid2
-- search
+  - mermaid2
+  - search
