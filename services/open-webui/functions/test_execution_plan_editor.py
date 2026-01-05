@@ -18,19 +18,21 @@ os.environ["PLAN_EDITOR_DATA"] = test_dir
 # Add the functions directory to path so we can import execution_plan_editor
 sys.path.insert(0, str(Path(__file__).parent))
 # isort: off
+import execution_plan_editor  # noqa: E402
 from execution_plan_editor import Action  # noqa: E402 - import after env setup required for test
 
 # isort: on
-# Mock the load_registry_data function to use our test data
-original_load_registry_data = None
+
+
+class MockRegistryState:
+    """Hold mock registry state without using global variables."""
+
+    original_load_registry_data = None
 
 
 def setup_mock_registry():
     """Setup mock registry data that returns our test data."""
-    global original_load_registry_data
-    import execution_plan_editor
-
-    original_load_registry_data = execution_plan_editor.load_registry_data
+    MockRegistryState.original_load_registry_data = execution_plan_editor.load_registry_data
 
     def mock_load_registry_data(agent_data_dir=None):
         return {
@@ -51,8 +53,14 @@ def setup_mock_registry():
             ],
             "context_types": [
                 {"type_name": "PV_ADDRESSES", "description": "PV address list"},
-                {"type_name": "TIME_RANGE", "description": "Time range specification"},
-                {"type_name": "ARCHIVER_DATA", "description": "Historical archiver data"},
+                {
+                    "type_name": "TIME_RANGE",
+                    "description": "Time range specification",
+                },
+                {
+                    "type_name": "ARCHIVER_DATA",
+                    "description": "Historical archiver data",
+                },
             ],
             "templates": [],
         }
@@ -62,11 +70,8 @@ def setup_mock_registry():
 
 def teardown_mock_registry():
     """Restore original registry loading."""
-    global original_load_registry_data
-    if original_load_registry_data:
-        import execution_plan_editor
-
-        execution_plan_editor.load_registry_data = original_load_registry_data
+    if MockRegistryState.original_load_registry_data:
+        execution_plan_editor.load_registry_data = MockRegistryState.original_load_registry_data
 
 
 class MockEventEmitter:
@@ -177,8 +182,14 @@ def create_mock_registry_data():
         ],
         "context_types": [
             {"type_name": "PV_ADDRESSES", "description": "PV address list"},
-            {"type_name": "TIME_RANGE", "description": "Time range specification"},
-            {"type_name": "ARCHIVER_DATA", "description": "Historical archiver data"},
+            {
+                "type_name": "TIME_RANGE",
+                "description": "Time range specification",
+            },
+            {
+                "type_name": "ARCHIVER_DATA",
+                "description": "Historical archiver data",
+            },
         ],
         "templates": [
             {
@@ -404,7 +415,7 @@ async def test_context_extraction():
         available_keys = action.extract_available_context_keys(context_summary)
         print(f"✅ Extracted {len(available_keys)} context keys")
         for ctx in available_keys:
-            print(f" - {ctx['contextKey']}: {ctx['contextType']}")
+            print(f"   - {ctx['contextKey']}: {ctx['contextType']}")  # noqa: E221 string
     else:
         print("❌ Failed to extract agent context")
 
@@ -437,7 +448,6 @@ async def run_all_tests():
 
     finally:
         teardown_mock_registry()
-        # Cleanup
 
 
 if __name__ == "__main__":
@@ -449,3 +459,4 @@ if __name__ == "__main__":
 
         print(f"\n🧹 Cleaning up test directory: {test_dir}")
         shutil.rmtree(test_dir, ignore_errors=True)
+        print("✨ Test suite completed")
