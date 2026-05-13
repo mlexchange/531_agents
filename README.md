@@ -7,29 +7,91 @@ mock mode is available for test if the agent isn't in the beamline computer
 ## Quick Start
 
 ```bash
-# Install the framework
-pip install osprey-framework
+# 1) Clone the repository and enter it
+git clone <repo-url>
+cd 531_agents
 
-# Recommended: Interactive setup (guides you through everything!)
-osprey
-# Start the command line chat interface
+# 2) Create and activate a Python 3.11 virtual environment
+python3.11 -m venv .venv
+source .venv/bin/activate
+
+# 3) Install dependencies
+pip install -r requirements.txt
+
+# 4) Copy environment template
+cp .env.example .env
+
+# 5) Add your language-model API key(s) to .env (at least one required)
+# Example:
+# OPENAI_API_KEY=your-openai-key
+
+# 6) Start the command line chat interface
 osprey chat
+```
+
+Example prompt:
+
+```text
+help me to do xanes 30eV 1eV step around Fe edge
+```
+
+In mock mode (for Tiled server and beamline), the AI will ask for your approval before running the scan. If you approve, a mock scan is performed.
+
+Supported API keys in `.env`:
+
+```env
+# API key for language model access
+ANTHROPIC_API_KEY=your-anthropic-key      # Recommended: Claude Haiku 4.5
+CBORG_API_KEY=your-cborg-key             # LBNL institutional provider
+AMSC_I2_API_KEY=your-amsc-key             # American Science Cloud
+STANFORD_API_KEY=your-stanford-key        # Stanford AI Playground
+OPENAI_API_KEY=your-openai-key            # OpenAI GPT models
+GOOGLE_API_KEY=your-google-key            # Google Gemini models
 ```
 
 ## Project Structure
 
 ```
 <!-- TREE START -->
+<pre>
+.
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── config.yml
+├── src/
+│   └── bl531/
+│       ├── bl531_api.py
+│       ├── bl531_data_api.py
+│       ├── context_classes.py
+│       ├── registry.py
+│       ├── INTEGRATION_GUIDE.md
+│       ├── README.md
+│       └── capabilities/
+├── scripts/
+│   └── update_readme_tree.py
+├── services/
+│   ├── docker-compose.yml.j2
+│   ├── jupyter/
+│   ├── open-webui/
+│   └── pipelines/
+├── mkdocs/
+├── _tests/
+└── Dockerfile
+</pre>
 <!-- TREE END -->
 ```
 ## Development
 
-*   **`count_capability.py`**: Get the beam intensity.
-*   **`move_capability.py`**: Move a motor to a certain position.
-*   **`diode_alignment_capability.py`**: Grid scan the diode and find the beam position.
-*   **`retrieve_data_capability.py`**: Retrieve the data from the Tiled server using a UID.
-*   **`gisaxs_alignment_capability.py`**: Align the sample for a GISAXS experiment.
-*   **`scan_capability.py`**: Capture images or get readings while moving a motor.
+Capabilities are implemented in `src/bl531/capabilities/`:
+
+* **`count_capability.py`**: Get beam intensity/readback values.
+* **`move_capability.py`**: Move a motor to a specified position.
+* **`diode_alignment_capability.py`**: Grid-scan the diode and find beam position.
+* **`retrieve_data_capability.py`**: Retrieve run data from the Tiled server by UID.
+* **`gisaxs_alignment_capability.py`**: Align the sample for GISAXS experiments.
+* **`scan_capability.py`**: Execute a scan workflow (scan → retrieve → format) with approval flow.
+* **`xray_edge_capability.py`**: Look up X-ray absorption edge energies (K/L/M) for elements (with Henke verification).
 
 ## Documentation for AI-agent osprey
 
