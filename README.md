@@ -8,15 +8,19 @@ mock mode is available for test if the agent isn't in the beamline computer
 
 ```bash
 # 1) Clone the repository and enter it
-git clone https://github.com/Henry-KH-chan/531_agents
+git clone <repo-url>
 cd 531_agents
 
-# 2) Create and activate a Python 3.11 virtual environment
-python3.11 -m venv .venv
+# 2) Install uv (if needed) and create a Python 3.11 virtual environment
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv --python 3.11
 source .venv/bin/activate
 
 # 3) Install dependencies
-pip install -r requirements.txt
+uv pip install -r requirements.txt
+
+# 3.1) Re-activate environment (recommended on some systems)
+source .venv/bin/activate
 
 # 4) Copy environment template
 cp .env.example .env
