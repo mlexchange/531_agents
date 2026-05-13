@@ -26,7 +26,7 @@ from osprey.utils.logger import get_logger
 from osprey.utils.streaming import get_streamer
 
 # isort: on
-from bl531.BL531DataAPI import bl531_data  # noqa: I100 bug in linter
+from bl531.bl531_data_api import bl531_data  # noqa: I100 bug in linter
 from bl531.context_classes import RunDataContext
 
 logger = get_logger("retrieve_data_capability")

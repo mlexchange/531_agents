@@ -1,9 +1,14 @@
 # Project Dependencies
 # Add your application-specific dependencies here
-
+fastapi==0.115.6
+starlette==0.41.3
+uvicorn[standard]
 # Framework dependency
-osprey-framework>=0.8.1
+aiohttp>=3.9.0
+litellm>=1.30.0
+osprey-framework<=0.9.1
 tiled
 stamina
 entrypoints
 dask
+xraydb

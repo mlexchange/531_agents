@@ -26,7 +26,7 @@ from osprey.utils.logger import get_logger
 from osprey.utils.streaming import get_streamer
 
 # isort: on
-from bl531.BL531API import bl531  # noqa: I100 bug in linter
+from bl531.bl531_api import bl531  # noqa: I100 bug in linter
 from bl531.context_classes import AlignmentContext
 
 logger = get_logger("diode_alignment_capability")

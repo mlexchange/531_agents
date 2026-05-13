@@ -15,8 +15,10 @@ from pathlib import Path
 test_dir = tempfile.mkdtemp(prefix="plan_editor_test_")
 os.environ["PLAN_EDITOR_DATA"] = test_dir
 
-# Add the functions directory to path so we can import execution_plan_editor
-sys.path.insert(0, str(Path(__file__).parent))
+FUNCTIONS_DIR = Path(__file__).resolve().parents[1] / "services" / "open-webui" / "functions"
+
+# Add the functions directory to path so we can import agent_context_button
+sys.path.insert(0, str(FUNCTIONS_DIR))
 # isort: off
 import execution_plan_editor  # noqa: E402
 from execution_plan_editor import Action  # noqa: E402 - import after env setup required for test

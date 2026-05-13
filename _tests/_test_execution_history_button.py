@@ -9,8 +9,10 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Add the functions directory to path so we can import execution_history_button
-sys.path.insert(0, str(Path(__file__).parent))
+FUNCTIONS_DIR = Path(__file__).resolve().parents[1] / "services" / "open-webui" / "functions"
+
+# Add the functions directory to path so we can import agent_context_button
+sys.path.insert(0, str(FUNCTIONS_DIR))
 
 from execution_history_button import Action  # noqa: E402
 

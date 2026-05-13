@@ -32,6 +32,88 @@ from typing import Any, ClassVar, Dict, List, Optional
 from osprey.context.base import CapabilityContext
 from pydantic import Field  # noqa:I201 conflict isort flake8
 
+"""
+X-ray Edge Energy Context Class for BL531.
+
+Stores X-ray absorption edge energy data retrieved from xraydb.
+Used for planning resonant scattering experiments.
+"""
+
+
+class XrayEdgeContext(CapabilityContext):
+    """X-ray absorption edge energy data for an element.
+
+    Contains edge energies retrieved from xraydb library, used for
+    planning resonant scattering experiments where the X-ray beam
+    energy must be tuned near an element's absorption edge.
+
+    The context stores the requested edge energy plus all available
+    edges for the element, allowing the agent to suggest alternative
+    edges if needed.
+    """
+
+    CONTEXT_TYPE: ClassVar[str] = "XRAY_EDGE_CONTEXT"
+    CONTEXT_CATEGORY: ClassVar[str] = "COMPUTATIONAL_DATA"
+
+    element: str = Field(description="Element symbol (e.g., 'Fe', 'Cu', 'Ni')")
+
+    atomic_number: int = Field(description="Atomic number (Z) of the element")
+
+    edge_type: str = Field(description="Absorption edge type (e.g., 'K', 'L3', 'M1')")
+
+    edge_energy_eV: float = Field(description="Edge energy in electron volts (eV)")
+
+    edge_energy_keV: float = Field(description="Edge energy in kiloelectron volts (keV)")
+
+    all_edges: Dict[str, float] = Field(
+        default_factory=dict, description="All available edges for this element with energies in eV"
+    )
+
+    def get_access_details(self, key_name: Optional[str] = None) -> Dict[str, Any]:
+        """Provide access information for LLM."""
+        key_ref = key_name if key_name else "key_name"
+
+        return {
+            "access_pattern": f"context.XRAY_EDGE_CONTEXT.{key_ref}",
+            "available_fields": [
+                "element",
+                "atomic_number",
+                "edge_type",
+                "edge_energy_eV",
+                "edge_energy_keV",
+                "all_edges",
+            ],
+            "example_usage": f"""# Access edge energy data
+            element = context.XRAY_EDGE_CONTEXT.{key_ref}.element
+            edge_energy_eV = context.XRAY_EDGE_CONTEXT.{key_ref}.edge_energy_eV
+            edge_energy_keV = context.XRAY_EDGE_CONTEXT.{key_ref}.edge_energy_keV
+            all_edges = context.XRAY_EDGE_CONTEXT.{key_ref}.all_edges
+
+            # Use for planning resonant scan
+            # Typical range: edge_energy_eV ± 50 eV
+            scan_start = edge_energy_eV - 50
+            scan_stop = edge_energy_eV + 50""",
+            "data_structure": "Single element's absorption edge data",
+        }
+
+    def get_summary(self, key_name: Optional[str] = None) -> Dict[str, Any]:
+        """Generate human-readable summary."""
+        # Format all available edges for display
+        other_edges = {
+            edge: f"{energy: .1f} eV ({energy/1000: .3f} keV)"
+            for edge, energy in self.all_edges.items()
+            if edge != self.edge_type
+        }
+
+        return {
+            "type": "X-ray Absorption Edge",
+            "element": f"{self.element} (Z={self.atomic_number})",
+            "requested_edge": self.edge_type,
+            "edge_energy": f"{self.edge_energy_eV: .1f} eV ({self.edge_energy_keV: .3f} keV)",
+            "other_available_edges": other_edges if other_edges else "None",
+            "typical_scan_range": f"{self.edge_energy_eV - 50: .1f} to {self.edge_energy_eV + 50: .1f} eV",
+        }
+
 
 class ScanParametersContext(CapabilityContext):
     """Parameters for executing a scan plan.
@@ -66,11 +148,11 @@ class ScanParametersContext(CapabilityContext):
             "access_pattern": f"context.SCAN_PARAMETERS.{key_ref}",
             "available_fields": ["motor", "start", "stop", "num_points", "detectors"],
             "example_usage": f"""# Access scan parameters
-motor = context.SCAN_PARAMETERS.{key_ref}.motor
-start = context.SCAN_PARAMETERS.{key_ref}.start
-stop = context.SCAN_PARAMETERS.{key_ref}.stop
-num_points = context.SCAN_PARAMETERS.{key_ref}.num_points
-detectors = context.SCAN_PARAMETERS.{key_ref}.detectors""",
+            motor = context.SCAN_PARAMETERS.{key_ref}.motor
+            start = context.SCAN_PARAMETERS.{key_ref}.start
+            stop = context.SCAN_PARAMETERS.{key_ref}.stop
+            num_points = context.SCAN_PARAMETERS.{key_ref}.num_points
+            detectors = context.SCAN_PARAMETERS.{key_ref}.detectors""",
             "data_structure": "Single parameter set for one scan operation",
         }
 

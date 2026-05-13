@@ -23,6 +23,20 @@ logger = get_logger("bl531_data_api")
 # Check if we should use mock mode
 MOCK_MODE = os.getenv("BL531_MOCK_MODE", "true").lower() == "true"
 
+ESSENTIAL_FIELDS = {
+    "diode",  # Detector reading
+    "mono_energy_energy_eV",  # Actual energy (not setpoint)
+    "hexapod_motor_Tz_mm_readback",  # Sample position readback
+    "hexapod_motor_Tx_mm_readback",  # Sample position readback
+    "hexapod_motor_Ty_mm_readback",  # Sample position readback
+    "hexapod_motor_Rz_deg_readback",  # Sample rotation readback
+    "hexapod_motor_Rx_deg_readback",  # Sample rotation readback
+    "hexapod_motor_Ry_deg_readback",  # Sample rotation readback
+    "time",  # Timestamp of the reading
+    "gi_angle",  # Grazing incidence angle
+    # Add other essential fields here
+}
+
 
 @dataclass
 class RunData:
@@ -113,6 +127,11 @@ class BL531DataAPI:
         run_data.metadata = dict(primary.metadata) if hasattr(primary, "metadata") else {}
 
         for key in primary.keys():
+            # NEW: Skip non-essential fields
+            if not self._is_essential_field(key):
+                logger.debug(f"  ⏭️  Skipping non-essential field: {key}")
+                continue
+
             try:
                 # Skip reading large image data
                 if key == "det_image":
@@ -128,6 +147,27 @@ class BL531DataAPI:
 
         logger.info(f"✅ Retrieved organized data: \n{run_data}")
         return run_data
+
+    def _is_essential_field(self, key: str) -> bool:
+        """Check if field is essential based on ESSENTIAL_FIELDS list."""
+        # Skip all timestamp fields
+        if key.startswith("ts_"):
+            return False
+
+        # Skip setpoint and offset fields (keep only actual readings)
+        if any(key.endswith(suffix) for suffix in ["_setpoint", "_offset", "_user_setpoint"]):
+            return False
+
+        # Check if in essential fields list
+        if key in ESSENTIAL_FIELDS:
+            return True
+
+        # Allow images
+        if "image" in key.lower():
+            return True
+
+        # Reject everything else
+        return False
 
     def get_image(self, run_uid: str, image_key: str = "det_image") -> np.ndarray:
         """

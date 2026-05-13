@@ -134,8 +134,21 @@ class Bl531RegistryProvider(RegistryConfigProvider):
                     module_path="bl531.capabilities.move_capability",
                     class_name="MoveCapability",
                     description="Move a motor to a specific position",
-                    provides=[],
+                    provides=["RUN_DATA_CONTEXT"],
                     requires=["MOTOR_NAME", "TARGET_POSITION"],
+                ),
+                # ────────────────────────────────────────────────────────
+                # X-RAY EDGE LOOKUP CAPABILITY
+                # ────────────────────────────────────────────────────────
+                # Retrieves X-ray absorption edge energies from xraydb
+                # Essential for planning resonant scattering experiments
+                CapabilityRegistration(
+                    name="xray_edge_lookup",
+                    module_path="bl531.capabilities.xray_edge_capability",
+                    class_name="XrayEdgeCapability",
+                    description="Get X-ray absorption edge energies (K, L, M) for elements using xraydb",
+                    provides=["XRAY_EDGE_CONTEXT"],
+                    requires=["ELEMENT"],  # EDGE_TYPE is optional
                 ),
             ],
             # ┌────────────────────────────────────────────────────────────┐
@@ -162,6 +175,18 @@ class Bl531RegistryProvider(RegistryConfigProvider):
                     context_type="ALIGNMENT_CONTEXT",
                     module_path="bl531.context_classes",
                     class_name="AlignmentContext",
+                ),
+                # ────────────────────────────────────────────────────────
+                # X-RAY EDGE CONTEXT
+                # ────────────────────────────────────────────────────────
+                # X-ray absorption edge energy data for elements
+                # Contains: element, edge_type, edge_energy (eV and keV), all edges
+                # Returned by: xray_edge_lookup
+                # Used for: Planning resonant scattering experiments
+                ContextClassRegistration(
+                    context_type="XRAY_EDGE_CONTEXT",
+                    module_path="bl531.context_classes",
+                    class_name="XrayEdgeContext",
                 ),
             ],
             # No data sources needed for BL531 (pure control API)

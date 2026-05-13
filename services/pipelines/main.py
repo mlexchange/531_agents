@@ -593,15 +593,34 @@ class Pipeline:
             logger.exception(f"Failed to initialize framework: {e}")
             raise
 
+    # def _build_config_for_session(self, user_id: str, chat_id: str, session_id: str) -> dict:
+    #     """Build comprehensive configuration for a session using config with valve overrides"""
+
+    #     # Get base configurable and add session info
+    #     configurable = get_full_configuration().copy()
+    #     configurable.update(
+    #         {
+    #             "user_id": user_id,
+    #             "thread_id": f"{user_id}_{chat_id}",
+    #             "chat_id": chat_id,
+    #             "session_id": session_id,
+    #             "interface_context": "openwebui",
+    #         }
+    #     )
     def _build_config_for_session(self, user_id: str, chat_id: str, session_id: str) -> dict:
         """Build comprehensive configuration for a session using config with valve overrides"""
 
         # Get base configurable and add session info
         configurable = get_full_configuration().copy()
+
+        # Use user_id as thread_id for consistency across Open WebUI chat sessions
+        # This ensures approval interrupts persist even if Open WebUI creates new chat_id
+        thread_id = f"{user_id}_main"  # ✅ Consistent across chat sessions
+
         configurable.update(
             {
                 "user_id": user_id,
-                "thread_id": f"{user_id}_{chat_id}",
+                "thread_id": thread_id,  # ✅ Stable thread ID
                 "chat_id": chat_id,
                 "session_id": session_id,
                 "interface_context": "openwebui",
@@ -711,6 +730,11 @@ class Pipeline:
         user_id = body.get("user", {}).get("id", "anonymous")
         chat_id = body.get("chat_id", f"chat_{int(time.time())}")
         session_id = body.get("session_id", chat_id)
+
+        # NEW: Filter ALL Open WebUI auto-generated requests (broader check)
+        if user_message.strip().startswith("### Task:"):
+            logger.info(f"Ignoring Open WebUI auto-generated task: {user_message[:50]}...")
+            return iter([])
 
         logger.info(f"Processing message for user: {user_id}, chat: {chat_id}")
         logger.info(f"Query: '{user_message[:100]}...'")
@@ -878,14 +902,93 @@ class Pipeline:
             yield self._create_status_event("", True)
             yield f"Error: {str(e)}"
 
+    # def _execute_graph_with_streaming(
+    #     self, input_data: Any, config: dict, loop: asyncio.AbstractEventLoop
+    # ):
+    #     """Execute graph with streaming in sync context and yield events"""
+
+    #     # Use a queue to bridge async streaming with sync generator
+    #     stream_queue: queue.Queue[Any] = queue.Queue()
+    #     exception_holder = [None]
+
+    #     def run_async_streaming():
+    #         """Run async streaming in a separate thread"""
+    #         try:
+
+    #             async def stream_execution():
+    #                 async for chunk in self._graph.astream(
+    #                     input_data, config=config, stream_mode="custom"
+    #                 ):
+    #                     # Debug: Log all chunks to see what we're receiving
+    #                     logger.debug(f"Received chunk: {chunk}")
+
+    #                     # Handle custom streaming events from get_stream_writer()
+    #                     if chunk.get("event_type") == "status":
+    #                         status_event = self._format_streaming_event(chunk)
+    #                         stream_queue.put(("status_event", status_event))
+    #                     else:
+    #                         logger.debug(
+    #                             f"Non-status chunk: {type(chunk)} "
+    #                             f"{list(chunk.keys()) if isinstance(chunk, dict) else str(chunk)[:100]}"
+    #                         )
+
+    #                 # Signal completion
+    #                 stream_queue.put(("done", None))
+
+    #             # Run the async execution
+    #             loop.run_until_complete(stream_execution())
+
+    #         except Exception as e:
+    #             exception_holder[0] = e
+    #             stream_queue.put(("error", str(e)))
+
+    #     # Start streaming in background thread
+    #     thread = threading.Thread(target=run_async_streaming)
+    #     thread.daemon = True
+    #     thread.start()
+
+    #     # Yield streaming events as they arrive
+    #     while True:
+    #         try:
+    #             event_type, data = stream_queue.get(timeout=1.0)
+
+    #             if event_type == "status_event":
+    #                 yield data
+    #             elif event_type == "done":
+    #                 break
+    #             elif event_type == "error":
+    #                 # Clear status and show error
+    #                 yield self._create_status_event("", True)
+    #                 yield f"❌ Streaming error: {data}"
+    #                 break
+
+    #         except queue.Empty:
+    #             # Check if thread is still alive
+    #             if not thread.is_alive():
+    #                 break
+    #             continue
+
+    #     # Wait for thread to complete
+    #     thread.join(timeout=2.0)
+
+    #     # Check for exceptions
+    #     if exception_holder[0]:
+    #         logger.exception(f"Error during streaming: {exception_holder[0]}")
+    #         # Clear status and show error
+    #         yield self._create_status_event("", True)
+    #         yield f"❌ Execution error: {exception_holder[0]}"
+
     def _execute_graph_with_streaming(
         self, input_data: Any, config: dict, loop: asyncio.AbstractEventLoop
     ):
         """Execute graph with streaming in sync context and yield events"""
 
+        from langgraph.errors import GraphInterrupt
+
         # Use a queue to bridge async streaming with sync generator
         stream_queue: queue.Queue[Any] = queue.Queue()
         exception_holder = [None]
+        interrupt_holder = [None]  # NEW: Separate holder for interrupts
 
         def run_async_streaming():
             """Run async streaming in a separate thread"""
@@ -914,7 +1017,13 @@ class Pipeline:
                 # Run the async execution
                 loop.run_until_complete(stream_execution())
 
+            except GraphInterrupt as interrupt:
+                # NEW: Handle interrupts separately - they're expected behavior
+                logger.info("GraphInterrupt detected during streaming - handling gracefully")
+                interrupt_holder[0] = interrupt
+                stream_queue.put(("interrupt", None))
             except Exception as e:
+                # Handle other errors normally
                 exception_holder[0] = e
                 stream_queue.put(("error", str(e)))
 
@@ -930,6 +1039,10 @@ class Pipeline:
 
                 if event_type == "status_event":
                     yield data
+                elif event_type == "interrupt":
+                    # NEW: Interrupt detected - exit cleanly, let caller handle it
+                    logger.info("Interrupt detected, exiting streaming cleanly")
+                    break
                 elif event_type == "done":
                     break
                 elif event_type == "error":
@@ -947,7 +1060,7 @@ class Pipeline:
         # Wait for thread to complete
         thread.join(timeout=2.0)
 
-        # Check for exceptions
+        # Check for exceptions (but NOT interrupts - those are expected)
         if exception_holder[0]:
             logger.exception(f"Error during streaming: {exception_holder[0]}")
             # Clear status and show error

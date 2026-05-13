@@ -36,11 +36,13 @@ BL531_MOTORS = {
     "hexapod_motor_Tz",
     "gi_angle",
     "mono_energy",
+    "mono_energy_mono_angle",
 }
 
 BL531_DETECTORS = {
     "diode",
     "det",
+    "mercury",
 }
 
 # let everybody can also test the AI agent
@@ -210,7 +212,7 @@ class BL531API:
         if self.mock_mode:
             # Simulate long execution in mock mode
             logger.info("🎭 Simulating alignment process in MOCK MODE...")
-            time.sleep(8 * 60)  # Simulate 8 minutes delay for mock mode
+            time.sleep(0.1 * 60)  # Simulate 8 minutes delay for mock mode
             return self._mock_plan_execution("automatic_gisaxs_alignment")
 
         plan_dict = {
@@ -373,7 +375,8 @@ if MOCK_MODE:
     )
 else:
     # Try localhost first, fallback to docker internal
-    base_url = os.getenv("BL531_BASE_URL", "http://192.168.10.155:60610")
+    # base_url = os.getenv("BL531_BASE_URL", "http://192.168.10.155:60610")
+    base_url = "http://192.168.10.155:60610"
     api_key = os.getenv("BL531_API_KEY", "test")
 
     logger.info(f"Creating BL531API instance with base_url={base_url}")

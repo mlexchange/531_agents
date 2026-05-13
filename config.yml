@@ -9,7 +9,7 @@
 build_dir: ./build
 
 # Root directory (absolute path)
-project_root: /home/bl531user/Repos/bl531-agent
+project_root: ${PROJECT_ROOT_PATH:-.}
 
 # Application Registry
 registry_path: ./src/bl531/registry.py
@@ -28,28 +28,28 @@ models:
   orchestrator:
     provider: cborg
     model_id: anthropic/claude-sonnet
-    max_tokens: 4096
+    max_tokens: 40000
   response:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   classifier:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   approval:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   task_extraction:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   memory:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   python_code_generator:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
   time_parsing:
     provider: cborg
-    model_id: google/gemini-flash
+    model_id: openai/gpt-4o
 
 # ============================================================
 # SERVICE CONFIGURATION
@@ -115,6 +115,8 @@ approval:
       mode: "epics_writes"   # Options: disabled | epics_writes | all_code
     memory:
       enabled: true
+    bl531_scan:
+      enabled: true
 
 # Execution limits and safety controls
 execution_control:
@@ -163,8 +165,7 @@ file_paths:
 execution:
   execution_method: "local"              # Options: local | container
   # Path to Python with dependencies
-  python_env_path: /home/nmanha/venv/bin/python
-
+  python_env_path: ${PYTHON_ENV_PATH:-python}
   # EPICS infrastructure (for hardware control applications)
   epics:
     timeout: 5.0

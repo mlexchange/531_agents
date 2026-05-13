@@ -15,8 +15,10 @@ from pathlib import Path
 test_dir = tempfile.mkdtemp(prefix="memory_test_")
 os.environ["USER_MEMORY_DIR"] = test_dir
 
-# Add the functions directory to path so we can import memory_button
-sys.path.insert(0, str(Path(__file__).parent))
+FUNCTIONS_DIR = Path(__file__).resolve().parents[1] / "services" / "open-webui" / "functions"
+
+# Add the functions directory to path so we can import agent_context_button
+sys.path.insert(0, str(FUNCTIONS_DIR))
 # isort: off
 from memory_button import Action  # noqa: E402 - import after env setup required for test
 

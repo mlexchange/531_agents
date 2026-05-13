@@ -8,8 +8,10 @@ import asyncio
 import sys
 from pathlib import Path
 
+FUNCTIONS_DIR = Path(__file__).resolve().parents[1] / "services" / "open-webui" / "functions"
+
 # Add the functions directory to path so we can import agent_context_button
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(FUNCTIONS_DIR))
 
 from agent_context_button import Action  # noqa: E402
 

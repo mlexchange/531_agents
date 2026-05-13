@@ -2,7 +2,7 @@
 Simple test script for BL531API
 """
 
-from BL531API import bl531
+from bl531_api import bl531
 
 print("\n" + "=" * 80)
 print("BL531 Beamline Control API - Test Script")
@@ -54,8 +54,11 @@ try:
     )
     print("   ✅ Success!")
     print(f"   run_uid: {result.run_uid}")
-except Exception as e:
-    print(f"   ❌ Error: {e}")
+except ValueError:
+    print("   ✅ Passed invalid detector check")
+
+else:
+    print("   ❌ Invalid detector was accepted")
 
 # Test 5: Scan with multiple detectors
 print("\n5️⃣  Testing scan with multiple detectors...")
