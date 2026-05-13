@@ -8,7 +8,7 @@ mock mode is available for test if the agent isn't in the beamline computer
 
 ```bash
 # 1) Clone the repository and enter it
-git clone <repo-url>
+git clone https://github.com/Henry-KH-chan/531_agents
 cd 531_agents
 
 # 2) Create and activate a Python 3.11 virtual environment
