@@ -23,14 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install -e ".[dev]"
 
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-
-          if [ -f requirements-dev.txt ]; then
-            pip install -r requirements-dev.txt
-          fi
       - name: Format with Black
         run: black --check .
 
@@ -44,14 +38,9 @@ jobs:
             --max-complexity=10 \
             --max-line-length=127 \
             --statistics
+
       - name: Test with pytest
         run: pytest
-
-      - name: Build MkDocs site
-        if: >
-          github.event_name == 'push' &&
-          github.ref == 'refs/heads/main'
-        run: mkdocs gh-deploy --force -f mkdocs/mkdocs.yml
 
       - name: Update Readme Tree
         if: >
