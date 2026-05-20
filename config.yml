@@ -66,13 +66,13 @@ services:
         hostname: jupyter-read
         port_host: 8088
         port_container: 8088
-        execution_modes: ["read_only"]
+        # delete: execution_modes: ["read_only"]
       write:
         name: jupyter-write
         hostname: jupyter-write
         port_host: 8089
         port_container: 8088
-        execution_modes: ["write_access"]
+        # delete: execution_modes: ["write_access"]
     copy_src: true  # Copies user application from src/
     render_kernel_templates: true
     # additional_dirs: []  # Add custom directories to copy if needed
@@ -185,7 +185,7 @@ execution:
       allows_writes: false
       environment:
         EPICS_CA_AUTO_ADDR_LIST: "NO"
-        EPICS_EXECUTION_MODE: "read_only"
+        EPICS_EXECUTION_MODE: "read"  # was "read_only"
     write_access:
       kernel_name: "python3-epics-write"
       gateway: "write_access"

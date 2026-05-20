@@ -7,6 +7,14 @@ echo "Custom startup script initiated..."
 # Determine container type from environment
 EXECUTION_MODE=${EPICS_EXECUTION_MODE:-unknown}
 
+# At the top, after EXECUTION_MODE is set, add:
+JUPYTER_TOKEN=${JUPYTER_TOKEN:-"jupyter-token"}
+
+# Warn loudly if using the default token
+if [ "$JUPYTER_TOKEN" = "jupyter-token" ]; then
+    echo "⚠️  WARNING: Using default Jupyter token. Set JUPYTER_TOKEN env var for security."
+fi
+
 echo "=============================================="
 echo "Starting Jupyter Container: $EXECUTION_MODE"
 if [ "$EXECUTION_MODE" = "read" ]; then
@@ -78,4 +86,9 @@ chown -R jovyan:users /home/jovyan/work || echo "Warning: chown on work director
 
 echo "Starting jupyter Notebook server..."
 # Execute jupyterLab using the start-notebook.sh script with all necessary parameters
-exec /usr/local/bin/start-notebook.sh --notebook-dir=/home/jovyan/work --NotebookApp.token='' --NotebookApp.disable_check_xsrf=True --allow-root --port=8088
+exec /usr/local/bin/start-notebook.sh \
+    --notebook-dir=/home/jovyan/work \
+    --NotebookApp.token="$JUPYTER_TOKEN" \
+    --NotebookApp.ip=0.0.0.0 \
+    --allow-root \
+    --port=8088

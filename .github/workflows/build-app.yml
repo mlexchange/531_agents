@@ -32,7 +32,7 @@ jobs:
             pip install -r requirements-dev.txt
           fi
       - name: Format with Black
-        run: black .
+        run: black --check .
 
       - name: Lint with flake8
         run: |

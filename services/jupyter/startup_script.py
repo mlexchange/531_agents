@@ -83,14 +83,14 @@ def print_environment_info():
 
 
 # Make common imports available
-try:
-    pass
+# try:
+#     pass
 
-    print("✓ Standard scientific libraries loaded")
+#     print("✓ Standard scientific libraries loaded")
 
-    print("✓ EPICS library loaded and ready")
-except ImportError as e:
-    print(f"⚠️  Some standard libraries not available: {e}")
+#     print("✓ EPICS library loaded and ready")
+# except ImportError as e:
+#     print(f"⚠️  Some standard libraries not available: {e}")
 
 # Initialize NLTK packages to avoid download messages in notebooks
 # TODO: cleanly separate from osprey startup!
@@ -124,23 +124,20 @@ def setup_epics():
 
             # Check if this is the read-only kernel (no simulation mode)
             if execution_mode == "read":
-                # This is the read-only kernel
                 raise PermissionError(
                     f"🔒 WRITE OPERATION BLOCKED\n"
                     f"   PV: {pvname}\n"
                     f"   Value: {value}\n"
                     f"   Reason: You are using the Read-Only kernel\n"
                     f"   Solution: Switch to '🧪 EPICS Simulation' kernel to test writes safely\n"
-                    f"            or '⚠️ Write Access' kernel for real machine control"  # noqa: E272 - format
-                ) from None  # Suppress original traceback
+                    f"            or '⚠️ Write Access' kernel for real machine control"
+                ) from None
 
-            else:
-                # This is write-access kernel - use original function
+            elif execution_mode == "write_access":
                 try:
                     return _original_caput(pvname, value, wait=wait, timeout=timeout, **kwargs)
                 except Exception as e:
                     if "Write access denied" in str(e):
-                        # Even in write kernel, if EPICS denies the write, provide helpful info
                         raise PermissionError(
                             f"⚠️ EPICS WRITE ACCESS DENIED\n"
                             f"   PV: {pvname}\n"
@@ -148,10 +145,18 @@ def setup_epics():
                             f"   Reason: EPICS gateway or IOC denied write access\n"
                             f"   Note: You are in Write Access kernel but this specific PV may be protected\n"
                             f"   Original error: {str(e)}"
-                        ) from None  # Suppress original traceback
+                        ) from None
                     else:
-                        # Re-raise other exceptions unchanged
                         raise
+
+            else:
+                # Unknown mode - block writes to be safe
+                raise PermissionError(
+                    f"🔒 WRITE OPERATION BLOCKED\n"
+                    f"   PV: {pvname}\n"
+                    f"   Value: {value}\n"
+                    f"   Reason: Unknown execution mode '{execution_mode}' - blocking writes for safety"
+                ) from None
 
         # Replace epics.caput with our enhanced version
         epics.caput = enhanced_caput
@@ -164,6 +169,8 @@ def setup_epics():
             print("  🔒 Read-only mode - writes will be blocked with helpful messages")
         elif execution_mode == "write_access":
             print("  ⚠️ Write access mode - REAL WRITES ENABLED (use with caution)")
+        else:
+            print(f"  ⚠️ Unknown mode '{execution_mode}' - writes will be blocked for safety")
 
     except ImportError:
         print("⚠️ PyEPICS not available - skipping EPICS error handling setup")

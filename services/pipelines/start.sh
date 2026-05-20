@@ -14,7 +14,7 @@ if [ -f "/pipelines/repo_src/requirements.txt" ]; then
 else
     echo "WARNING: /pipelines/repo_src/requirements.txt not found"
     echo "Installing framework directly as fallback..."
-    pip install osprey-framework>=0.8.0
+    pip install "osprey-framework>=0.8.0"
 fi
 
 # Development mode override - install local framework AFTER everything else

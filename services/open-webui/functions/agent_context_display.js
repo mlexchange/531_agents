@@ -36,16 +36,17 @@ try {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
     `;
 
+    const contextHTML = "${FORMATTED_CONTEXT}";
     popup.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb;">
             <h2 style="margin: 0; color: #374151; font-size: 20px; font-weight: 600;">🧠 ALS Assistant Agent Context</h2>
             <button id="context-close-btn" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 14px;">Close</button>
         </div>
-
-        <div style="line-height: 1.6;">
-            ${FORMATTED_CONTEXT}
-        </div>
+        <div id="context-body" style="line-height: 1.6;"></div>
     `;
+
+    // Assign via innerHTML separately — never interpolate untrusted content into a template literal
+    document.getElementById('context-body').innerHTML = contextHTML;
 
     // Add event listeners
     overlay.appendChild(popup);
