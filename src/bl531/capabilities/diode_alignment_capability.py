@@ -161,8 +161,7 @@ class DiodeAlignmentCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_diode_alignment: Optimize diode position**
 
                 ═══════════════════════════════════════════════════════════
@@ -218,8 +217,7 @@ class DiodeAlignmentCapability(BaseCapability):
                 Returns ALIGNMENT_CONTEXT with run_uid for the alignment procedure.
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[example1, example2, example3],
             priority=10,
         )

@@ -208,8 +208,7 @@ class CountCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_count: Measure and return data automatically**
 
                 Executes measurement → retrieves data → returns formatted results
@@ -263,8 +262,7 @@ class CountCapability(BaseCapability):
                 IMPORTANT: Always use get_summary() to access values!
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[example1, example2],
             priority=10,
         )

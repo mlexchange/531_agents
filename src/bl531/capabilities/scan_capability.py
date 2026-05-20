@@ -725,8 +725,7 @@ class ScanCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_scan: Scan motor and return data or take data under some specific motor value**
 
                 ═══════════════════════════════════════════════════════════
@@ -780,8 +779,7 @@ class ScanCapability(BaseCapability):
                 Energy: "8 keV" → "8000" (convert to eV)
                 Distance: "2 mm" → "2.0" (already mm)
 
-                """
-            ),
+                """),
             examples=[example1, example2, example3, example4, example5, example6],
             priority=10,
         )

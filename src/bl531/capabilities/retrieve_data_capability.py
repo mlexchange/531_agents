@@ -174,8 +174,7 @@ class RetrieveDataCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_retrieve_data: Fetch data from completed experiments**
 
                 ═══════════════════════════════════════════════════════════
@@ -215,8 +214,7 @@ class RetrieveDataCapability(BaseCapability):
                 ❌ "RUN_UID": "COUNT_PLAN_CONTEXT.beam_intensity"  (Missing template syntax!)
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[scan_then_retrieve, user_provided_uid],
             priority=10,
         )
@@ -225,8 +223,7 @@ class RetrieveDataCapability(BaseCapability):
         """Provide guidance for the initial task classifier AI."""
 
         return TaskClassifierGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 Only classify as TRUE if:
                 1. User wants to retrieve EXISTING data (implies run_uid is available)
                 2. User explicitly provides a run_uid to fetch
@@ -234,8 +231,7 @@ class RetrieveDataCapability(BaseCapability):
                 Classify as FALSE if:
                 - User wants new measurements (need to run experiment FIRST)
                 - No run_uid exists or can be referenced
-                """
-            ),
+                """),
             examples=[
                 # TRUE - can retrieve existing data
                 ClassifierExample(

@@ -257,8 +257,7 @@ class MoveCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_move: Move motor and verify with count**
 
                 Moves motor to target position and takes diode reading for verification.
@@ -360,8 +359,7 @@ class MoveCapability(BaseCapability):
                 - "Take image" → use bl531_count
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[example1, example2, example3, example4],
             priority=10,
         )

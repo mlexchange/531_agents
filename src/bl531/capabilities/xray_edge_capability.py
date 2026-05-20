@@ -332,8 +332,7 @@ class XrayEdgeCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **xray_edge_lookup: Get X-ray absorption edge energies**
 
                 ═══════════════════════════════════════════════════════════
@@ -373,8 +372,7 @@ class XrayEdgeCapability(BaseCapability):
                 → parameters: {"ELEMENT": "Ti"}
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[example1, example2, example3, example4],
             priority=10,
         )

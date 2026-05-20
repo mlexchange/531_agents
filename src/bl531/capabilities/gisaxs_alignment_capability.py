@@ -144,8 +144,7 @@ class GISAXSAlignmentCapability(BaseCapability):
         )
 
         return OrchestratorGuide(
-            instructions=textwrap.dedent(
-                """
+            instructions=textwrap.dedent("""
                 **bl531_gisaxs_alignment: Find reference zero angle**
 
                 ═══════════════════════════════════════════════════════════
@@ -200,8 +199,7 @@ class GISAXSAlignmentCapability(BaseCapability):
                 Returns ALIGNMENT_CONTEXT with run_uid for the alignment procedure.
 
                 ═══════════════════════════════════════════════════════════
-                """
-            ),
+                """),
             examples=[example1, example2],
             priority=10,
         )
