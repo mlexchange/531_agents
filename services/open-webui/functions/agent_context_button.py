@@ -115,7 +115,9 @@ class Action:
 
     def format_context_summary_markdown(self, context_summary: Dict[str, Any], user_valves) -> str:
         """Format the agent context summary as markdown."""
-        context_data = context_summary.get("context_data") or context_summary.get("context_details", {})
+        context_data = context_summary.get("context_data") or context_summary.get(
+            "context_details", {}
+        )
 
         if not context_summary or not context_data:
             return (
@@ -170,7 +172,9 @@ class Action:
         }
         return emoji_map.get(context_type, "📁")
 
-    def _add_context_summary_table(self, markdown: str, context_info: Dict[str, Any], user_valves) -> str:
+    def _add_context_summary_table(
+        self, markdown: str, context_info: Dict[str, Any], user_valves
+    ) -> str:
         summary_table = "| Field | Value |\n|-------|-------|\n"
         context_info = self._safe_dict(context_info)
         context_type = context_info.get("type", "Unknown")
@@ -189,7 +193,9 @@ class Action:
             summary_table += f"| **PV Count** | {len(pv_data)} |\n"
 
         elif context_type == "Archiver Data":
-            summary_table += f"| **Total Points** | {self._safe_num(context_info.get('total_points', 0)):,} |\n"
+            summary_table += (
+                f"| **Total Points** | {self._safe_num(context_info.get('total_points', 0)):,} |\n"
+            )
             summary_table += f"| **PV Count** | {context_info.get('pv_count', 0)} |\n"
             summary_table += f"| **Time Info** | {context_info.get('time_info', 'N/A')} |\n"
 
@@ -302,7 +308,9 @@ class Action:
 
         return markdown
 
-    async def action(self, body: dict, __user__=None, __event_emitter__=None, __event_call__=None) -> Optional[dict]:
+    async def action(
+        self, body: dict, __user__=None, __event_emitter__=None, __event_call__=None
+    ) -> Optional[dict]:
         """Display formatted agent context using a popup modal."""
         logger.info(
             f"User - Name: {__user__['name']}, ID: {__user__['id']} - "
@@ -314,11 +322,16 @@ class Action:
             user_valves = self.UserValves()
 
         await __event_emitter__(
-            {"type": "status", "data": {"description": "Retrieving agent context...", "done": False}}
+            {
+                "type": "status",
+                "data": {"description": "Retrieving agent context...", "done": False},
+            }
         )
 
         try:
-            logger.info(f"Processing agent context request for user {__user__.get('name', 'unknown')}")
+            logger.info(
+                f"Processing agent context request for user {__user__.get('name', 'unknown')}"
+            )
             logger.info(f"Message count: {len(body.get('messages', []))}")
 
             context_summary = self.extract_context_summary_from_messages(body.get("messages", []))
@@ -336,14 +349,20 @@ class Action:
 
                 await __event_call__({"type": "execute", "data": {"code": no_context_js}})
                 await __event_emitter__(
-                    {"type": "status", "data": {"description": "No agent context available", "done": True}}
+                    {
+                        "type": "status",
+                        "data": {"description": "No agent context available", "done": True},
+                    }
                 )
                 return None
 
             logger.info(f"Found agent context: {list(context_summary.keys())}")
 
             await __event_emitter__(
-                {"type": "status", "data": {"description": "Formatting agent context...", "done": False}}
+                {
+                    "type": "status",
+                    "data": {"description": "Formatting agent context...", "done": False},
+                }
             )
 
             formatted_context = self.format_context_summary_html(context_summary, user_valves)
@@ -357,14 +376,19 @@ class Action:
                 context_js_template = "alert('Error: JavaScript file not found');"
 
             formatted_context_json = json.dumps(formatted_context)
-            context_js = context_js_template.replace('"${FORMATTED_CONTEXT}"', formatted_context_json)
+            context_js = context_js_template.replace(
+                '"${FORMATTED_CONTEXT}"', formatted_context_json
+            )
 
             await __event_call__({"type": "execute", "data": {"code": context_js}})
             await __event_emitter__(
                 {"type": "status", "data": {"description": "Agent context displayed", "done": True}}
             )
 
-            context_categories = len(context_summary.get("context_data", {}) or context_summary.get("context_details", {}))
+            context_categories = len(
+                context_summary.get("context_data", {})
+                or context_summary.get("context_details", {})
+            )
             logger.info(
                 f"User - Name: {__user__['name']}, ID: {__user__['id']} - "
                 f"Agent context popup displayed successfully ({context_categories} categories)"
@@ -384,14 +408,19 @@ class Action:
             error_js = error_js_template.replace('"${ERROR_MESSAGE}"', json.dumps(str(e)))
             await __event_call__({"type": "execute", "data": {"code": error_js}})
             await __event_emitter__(
-                {"type": "status", "data": {"description": "Error processing agent context", "done": True}}
+                {
+                    "type": "status",
+                    "data": {"description": "Error processing agent context", "done": True},
+                }
             )
 
         return None
 
     def format_context_summary_html(self, context_summary: Dict[str, Any], user_valves) -> str:
         """Format the agent context summary as HTML for popup display (escaped)."""
-        context_data = context_summary.get("context_data") or context_summary.get("context_details", {})
+        context_data = context_summary.get("context_data") or context_summary.get(
+            "context_details", {}
+        )
 
         if not context_summary or not context_data:
             no_data_style = "text-align: center; padding: 40px; color: #6b7280; font-style: italic"
@@ -429,7 +458,7 @@ class Action:
             f'<div style="{overview_subtitle_style}">Available for use in subsequent queries</div>'
             f"</div>"
             f'<div style="{grid_style}">'
-            f'<div style="{stat_box_style}"><div style="{stat_number_green_style}">{self._h(total_categories)}</div>'
+            f'<div style="{stat_box_style}"><div style="{stat_number_green_style}">{self._h(total_categories)}</div>'  # noqa: E501
             f'<div style="{stat_label_style}">Categories</div></div>'
             f'<div style="{stat_box_style}"><div style="{stat_number_blue_style}">{self._h(total_items)}</div>'
             f'<div style="{stat_label_style}">Total Items</div></div>'
@@ -447,7 +476,9 @@ class Action:
         category_container_style = (
             "margin-bottom: 28px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden"
         )
-        category_header_style = "background: #f1f5f9; padding: 16px; border-bottom: 1px solid #e2e8f0"
+        category_header_style = (
+            "background: #f1f5f9; padding: 16px; border-bottom: 1px solid #e2e8f0"
+        )
         category_title_style = "margin: 0; color: #1f2937; font-size: 16px; font-weight: 600"
         category_body_style = "padding: 20px"
 
@@ -503,14 +534,13 @@ class Action:
             "font-weight: 600; color: #374151"
         )
         td_field_style = (
-            "padding: 8px 12px; border: 1px solid #cbd5e1; "
-            "font-weight: 500; color: #374151"
+            "padding: 8px 12px; border: 1px solid #cbd5e1; " "font-weight: 500; color: #374151"
         )
         td_value_style = "padding: 8px 12px; border: 1px solid #cbd5e1; color: #1f2937"
 
         summary_parts = [
             f'<div style="{table_container_style}"><table style="{table_style}"><thead>',
-            f'<tr style="{header_row_style}"><th style="{th_style}">Field</th><th style="{th_style}">Value</th></tr>',
+            f'<tr style="{header_row_style}"><th style="{th_style}">Field</th><th style="{th_style}">Value</th></tr>',  # noqa: E501
             "</thead><tbody>",
         ]
 
@@ -521,8 +551,8 @@ class Action:
             description = self._safe_str(context_info.get("description", "N/A"))
             summary_parts.extend(
                 [
-                    f'<tr><td style="{td_field_style}">Total PVs</td><td style="{td_value_style}">{self._h(total_pvs)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">Description</td><td style="{td_value_style}">{self._h(description)}</td></tr>',
+                    f'<tr><td style="{td_field_style}">Total PVs</td><td style="{td_value_style}">{self._h(total_pvs)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">Description</td><td style="{td_value_style}">{self._h(description)}</td></tr>',  # noqa: E501
                 ]
             )
 
@@ -532,16 +562,16 @@ class Action:
             duration = self._safe_str(context_info.get("duration", "N/A"))
             summary_parts.extend(
                 [
-                    f'<tr><td style="{td_field_style}">Start Time</td><td style="{td_value_style}">{self._h(start_time)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">End Time</td><td style="{td_value_style}">{self._h(end_time)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">Duration</td><td style="{td_value_style}">{self._h(duration)}</td></tr>',
+                    f'<tr><td style="{td_field_style}">Start Time</td><td style="{td_value_style}">{self._h(start_time)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">End Time</td><td style="{td_value_style}">{self._h(end_time)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">Duration</td><td style="{td_value_style}">{self._h(duration)}</td></tr>',  # noqa: E501
                 ]
             )
 
         elif context_type == "PV Values":
             pv_data = self._safe_dict(context_info.get("pv_data", {}))
             summary_parts.append(
-                f'<tr><td style="{td_field_style}">PV Count</td><td style="{td_value_style}">{self._h(len(pv_data))}</td></tr>'
+                f'<tr><td style="{td_field_style}">PV Count</td><td style="{td_value_style}">{self._h(len(pv_data))}</td></tr>'  # noqa: E501
             )
 
         elif context_type == "Archiver Data":
@@ -550,16 +580,16 @@ class Action:
             time_info = self._safe_str(context_info.get("time_info", "N/A"))
             summary_parts.extend(
                 [
-                    f'<tr><td style="{td_field_style}">Total Points</td><td style="{td_value_style}">{self._h(f"{total_points:,}")}</td></tr>',
-                    f'<tr><td style="{td_field_style}">PV Count</td><td style="{td_value_style}">{self._h(pv_count)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">Time Info</td><td style="{td_value_style}">{self._h(time_info)}</td></tr>',
+                    f'<tr><td style="{td_field_style}">Total Points</td><td style="{td_value_style}">{self._h(f"{total_points:,}")}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">PV Count</td><td style="{td_value_style}">{self._h(pv_count)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">Time Info</td><td style="{td_value_style}">{self._h(time_info)}</td></tr>',  # noqa: E501
                 ]
             )
 
         elif context_type in ["Analysis Results", "Visualization Results", "Operation Results"]:
             field_count = self._safe_num(context_info.get("field_count", 0))
             summary_parts.append(
-                f'<tr><td style="{td_field_style}">Field Count</td><td style="{td_value_style}">{self._h(field_count)}</td></tr>'
+                f'<tr><td style="{td_field_style}">Field Count</td><td style="{td_value_style}">{self._h(field_count)}</td></tr>'  # noqa: E501
             )
             available_fields = self._safe_list(context_info.get("available_fields", []))
             if available_fields:
@@ -567,7 +597,7 @@ class Action:
                 if len(available_fields) > 5:
                     fields_preview += f" (and {len(available_fields) - 5} more)"
                 summary_parts.append(
-                    f'<tr><td style="{td_field_style}">Available Fields</td><td style="{td_value_style}">{self._h(fields_preview)}</td></tr>'
+                    f'<tr><td style="{td_field_style}">Available Fields</td><td style="{td_value_style}">{self._h(fields_preview)}</td></tr>'  # noqa: E501
                 )
 
         elif context_type == "Memory Context":
@@ -576,16 +606,16 @@ class Action:
             newest_memory = self._safe_str(context_info.get("newest_memory", "N/A"))
             summary_parts.extend(
                 [
-                    f'<tr><td style="{td_field_style}">Memory Count</td><td style="{td_value_style}">{self._h(memory_count)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">Oldest Memory</td><td style="{td_value_style}">{self._h(oldest_memory)}</td></tr>',
-                    f'<tr><td style="{td_field_style}">Newest Memory</td><td style="{td_value_style}">{self._h(newest_memory)}</td></tr>',
+                    f'<tr><td style="{td_field_style}">Memory Count</td><td style="{td_value_style}">{self._h(memory_count)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">Oldest Memory</td><td style="{td_value_style}">{self._h(oldest_memory)}</td></tr>',  # noqa: E501
+                    f'<tr><td style="{td_field_style}">Newest Memory</td><td style="{td_value_style}">{self._h(newest_memory)}</td></tr>',  # noqa: E501
                 ]
             )
 
         elif context_type == "Conversation Results":
             message_type = self._safe_str(context_info.get("message_type", "N/A"))
             summary_parts.append(
-                f'<tr><td style="{td_field_style}">Message Type</td><td style="{td_value_style}">{self._h(message_type)}</td></tr>'
+                f'<tr><td style="{td_field_style}">Message Type</td><td style="{td_value_style}">{self._h(message_type)}</td></tr>'  # noqa: E501
             )
 
         summary_parts.append("</tbody></table></div>")
@@ -605,7 +635,9 @@ class Action:
         )
         item_style = "margin-bottom: 4px; color: #1f2937"
         more_items_style = "color: #6b7280; font-style: italic"
-        center_text_style = "color: #6b7280; font-style: italic; text-align: center; margin-top: 8px"
+        center_text_style = (
+            "color: #6b7280; font-style: italic; text-align: center; margin-top: 8px"
+        )
 
         if context_type == "PV Addresses":
             pv_list = self._safe_list(context_info.get("pv_list", []))
@@ -618,7 +650,9 @@ class Action:
                     html_parts.append(f'<div style="{item_style}">• {self._h(pv)}</div>')
                 if len(pv_list) > user_valves.max_sample_items:
                     remaining = len(pv_list) - user_valves.max_sample_items
-                    html_parts.append(f'<div style="{more_items_style}">• (and {self._h(remaining)} more)</div>')
+                    html_parts.append(
+                        f'<div style="{more_items_style}">• (and {self._h(remaining)} more)</div>'
+                    )
                 html_parts.append("</div></div>")
 
         elif context_type == "PV Values":
@@ -628,9 +662,7 @@ class Action:
                     "background: #f8fafc; padding: 12px; border-radius: 4px; border: 1px solid #e2e8f0; "
                     "font-size: 12px; max-height: 200px; overflow-y: auto"
                 )
-                pv_value_item_style = (
-                    "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"
-                )
+                pv_value_item_style = "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"  # noqa: E501
                 pv_name_style = "color: #1f2937; font-family: monospace"
                 pv_value_style = "color: #059669; font-weight: 600"
                 pv_timestamp_style = "color: #6b7280; font-size: 11px"
@@ -660,7 +692,9 @@ class Action:
 
                 if len(pv_data) > user_valves.max_sample_items:
                     remaining = len(pv_data) - user_valves.max_sample_items
-                    html_parts.append(f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>')
+                    html_parts.append(
+                        f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>'
+                    )
 
                 html_parts.append("</div></div>")
 
@@ -688,7 +722,9 @@ class Action:
 
                 if len(pv_names) > user_valves.max_sample_items:
                     remaining = len(pv_names) - user_valves.max_sample_items
-                    html_parts.append(f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>')
+                    html_parts.append(
+                        f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>'
+                    )
 
                 html_parts.append("</div></div>")
 
@@ -699,9 +735,7 @@ class Action:
                     "background: #f8fafc; padding: 12px; border-radius: 4px; border: 1px solid #e2e8f0; "
                     "font-size: 12px; max-height: 200px; overflow-y: auto"
                 )
-                result_item_style = (
-                    "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"
-                )
+                result_item_style = "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"  # noqa: E501
                 result_key_style = "color: #1f2937"
                 result_large_style = "color: #6b7280; font-style: italic"
                 result_value_style = "color: #059669"
@@ -719,19 +753,21 @@ class Action:
 
                     if isinstance(value, (list, dict)) and len(str(value)) > 100:
                         html_parts.append(
-                            f'<div style="{result_item_style}"><strong style="{result_key_style}">{self._h(display_key)}:</strong> '
+                            f'<div style="{result_item_style}"><strong style="{result_key_style}">{self._h(display_key)}:</strong> '  # noqa: E501
                             f'<span style="{result_large_style}">(large data structure)</span></div>'
                         )
                     else:
                         html_parts.append(
-                            f'<div style="{result_item_style}"><strong style="{result_key_style}">{self._h(display_key)}:</strong> '
+                            f'<div style="{result_item_style}"><strong style="{result_key_style}">{self._h(display_key)}:</strong> '  # noqa: E501
                             f'<span style="{result_value_style}">{self._h(value)}</span></div>'
                         )
                     count += 1
 
                 if len(results) > user_valves.max_sample_items:
                     remaining = len(results) - user_valves.max_sample_items
-                    html_parts.append(f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>')
+                    html_parts.append(
+                        f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>'
+                    )
 
                 html_parts.append("</div></div>")
 
@@ -742,14 +778,12 @@ class Action:
                     "background: #f8fafc; padding: 12px; border-radius: 4px; border: 1px solid #e2e8f0; "
                     "font-size: 12px; max-height: 200px; overflow-y: auto"
                 )
-                memory_item_style = (
-                    "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"
-                )
+                memory_item_style = "margin-bottom: 8px; padding: 8px; background: white; border-radius: 3px; border: 1px solid #e2e8f0"  # noqa: E501
                 memory_content_style_inner = "color: #1f2937; margin-bottom: 4px"
                 memory_timestamp_style = "color: #6b7280; font-size: 11px"
 
                 html_parts.append(
-                    f'<div style="{section_container_style}"><h5 style="{section_title_style}">Memory Entries:</h5>'
+                    f'<div style="{section_container_style}"><h5 style="{section_title_style}">Memory Entries:</h5>'  # noqa: E501
                     f'<div style="{memory_content_style}">'
                 )
 
@@ -766,7 +800,9 @@ class Action:
 
                 if len(memories) > user_valves.max_sample_items:
                     remaining = len(memories) - user_valves.max_sample_items
-                    html_parts.append(f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>')
+                    html_parts.append(
+                        f'<div style="{center_text_style}">• (and {self._h(remaining)} more)</div>'
+                    )
 
                 html_parts.append("</div></div>")
 
@@ -791,7 +827,7 @@ class Action:
                     )
                 else:
                     html_parts.append(
-                        f'<div style="{response_text_style}"><strong>Full Response:</strong> {self._h(full_response)}</div>'
+                        f'<div style="{response_text_style}"><strong>Full Response:</strong> {self._h(full_response)}</div>'  # noqa: E501
                     )
 
                 html_parts.append("</div></div>")
@@ -804,6 +840,6 @@ actions = [
         "id": "als_assistant_agent_context",
         "name": "Agent Context",
         "description": "View current ALS Assistant agent context data and available information",
-        "icon_url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyUzYuNDggMjIgMTIgMjJTMjIgMTcuNTIgMjIgMTJTMTcuNTIgMiAxMiAyWk0xMiAyMEM3LjU5IDIwIDQgMTYuNDEgNCAxMlM3LjU5IDQgMTIgNFMyMCA3LjU5IDIwIDEyUzE2LjQxIDIwIDEyIDIwWiIgZmlsbD0iY3VycmVudENvbG9yIi8+CjxwYXRoIGQ9Ik0xMiA2VjhNMTIgMTZWMThNMTAgMTJIMTRNOCAxMkg2TTE4IDEySDE2IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+",
+        "icon_url": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJDNi40OCAyIDIgNi40OCAyIDEyUzYuNDggMjIgMTIgMjJTMjIgMTcuNTIgMjIgMTJTMTcuNTIgMiAxMiAyWk0xMiAyMEM3LjU5IDIwIDQgMTYuNDEgNCAxMlM3LjU5IDQgMTIgNFMyMCA3LjU5IDIwIDEyUzE2LjQxIDIwIDEyIDIwWiIgZmlsbD0iY3VycmVudENvbG9yIi8+CjxwYXRoIGQ9Ik0xMiA2VjhNMTIgMTZWMThNMTAgMTJIMTRNOCAxMkg2TTE4IDEySDE2IiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KPC9zdmc+",  # noqa: E501
     }
 ]
