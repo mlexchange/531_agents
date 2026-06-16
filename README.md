@@ -1,93 +1,111 @@
-# project_template
+# bl531
 
-This template includes common configuration and settings for ALS Computing projects.
+bl531 - Osprey Agent Application
+An AI agent built with the Osprey framework to automate experimental procedures and data handling at Beamline 5.3.1 by interacting with the queue server and Tiled data server.
+mock mode is available for test if the agent isn't in the beamline computer
 
+## Quick Start
+
+```bash
+# 1) Clone the repository and enter it
+git clone <repo-url>
+cd 531_agents
+
+# 2) Install uv (if needed) and create a Python 3.11 virtual environment
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv --python 3.11
+source .venv/bin/activate
+
+# 3) Install the package with development dependencies
+uv pip install -e ".[dev]"
+
+# 3.1) Re-activate environment (recommended on some systems)
+source .venv/bin/activate
+
+# 4) Copy environment template
+cp .env.example .env
+
+# 5) Add your language-model API key(s) to .env (at least one required)
+# Example:
+# OPENAI_API_KEY=your-openai-key
+
+# 6) Start the command line chat interface
+osprey chat
+```
+
+Example prompt:
+
+```text
+help me to do xanes 30eV 1eV step around Fe edge
+```
+
+In mock mode (for Tiled server and beamline), the AI will ask for your approval before running the scan. If you approve, a mock scan is performed.
+
+Supported API keys in `.env`:
+
+```env
+# API key for language model access
+ANTHROPIC_API_KEY=your-anthropic-key      # Recommended: Claude Haiku 4.5
+CBORG_API_KEY=your-cborg-key             # LBNL institutional provider
+AMSC_I2_API_KEY=your-amsc-key             # American Science Cloud
+STANFORD_API_KEY=your-stanford-key        # Stanford AI Playground
+OPENAI_API_KEY=your-openai-key            # OpenAI GPT models
+GOOGLE_API_KEY=your-google-key            # Google Gemini models
+```
+
+## Project Structure
+
+```
 <!-- TREE START -->
 <pre>
 .
-├── <a href="https://github.com/als-computing/project_template/blob/main/Dockerfile">Dockerfile</a>
-├── <a href="https://github.com/als-computing/project_template/blob/main/README.md">README.md</a>
-├── <a href="https://github.com/als-computing/project_template/tree/main/_tests">_tests</a>
-│   └── <a href="https://github.com/als-computing/project_template/blob/main/_tests/test_example.py">test_example.py</a>
-├── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs">mkdocs</a>
-│   ├── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/docs">docs</a>
-│   │   ├── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/about.md">about.md</a>
-│   │   ├── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/docs/assets">assets</a>
-│   │   │   ├── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/assets/als_style.css">als_style.css</a>
-│   │   │   └── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/docs/assets/images">images</a>
-│   │   │       ├── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/assets/images/doe_logo.png">doe_logo.png</a>
-│   │   │       └── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/assets/images/lbl_logo.png">lbl_logo.png</a>
-│   │   ├── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/index.md">index.md</a>
-│   │   └── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/docs/test.md">test.md</a>
-│   ├── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/mkdocs.yml">mkdocs.yml</a>
-│   └── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/overrides">overrides</a>
-│       ├── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/overrides/assets">assets</a>
-│       │   └── <a href="https://github.com/als-computing/project_template/tree/main/mkdocs/overrides/assets/images">images</a>
-│       │       └── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/overrides/assets/images/favicon.png">favicon.png</a>
-│       └── <a href="https://github.com/als-computing/project_template/blob/main/mkdocs/overrides/main.html">main.html</a>
-├── <a href="https://github.com/als-computing/project_template/blob/main/pytest.ini">pytest.ini</a>
-├── <a href="https://github.com/als-computing/project_template/blob/main/requirements.txt">requirements.txt</a>
-└── <a href="https://github.com/als-computing/project_template/tree/main/scripts">scripts</a>
-    └── <a href="https://github.com/als-computing/project_template/blob/main/scripts/update_readme_tree.py">update_readme_tree.py</a>
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── config.yml
+├── src/
+│   └── bl531/
+│       ├── bl531_api.py
+│       ├── bl531_data_api.py
+│       ├── context_classes.py
+│       ├── registry.py
+│       ├── INTEGRATION_GUIDE.md
+│       ├── README.md
+│       └── capabilities/
+├── scripts/
+│   └── update_readme_tree.py
+├── services/
+│   ├── docker-compose.yml.j2
+│   ├── jupyter/
+│   ├── open-webui/
+│   └── pipelines/
+├── mkdocs/
+├── _tests/
+└── Dockerfile
 </pre>
 <!-- TREE END -->
+```
+## Development
 
+Capabilities are implemented in `src/bl531/capabilities/`:
 
-## Features
+* **`count_capability.py`**: Get beam intensity/readback values.
+* **`move_capability.py`**: Move a motor to a specified position.
+* **`diode_alignment_capability.py`**: Grid-scan the diode and find beam position.
+* **`retrieve_data_capability.py`**: Retrieve run data from the Tiled server by UID.
+* **`gisaxs_alignment_capability.py`**: Align the sample for GISAXS experiments.
+* **`scan_capability.py`**: Execute a scan workflow (scan → retrieve → format) with approval flow.
+* **`xray_edge_capability.py`**: Look up X-ray absorption edge energies (K/L/M) for elements (with Henke verification).
 
-Included in this template are a number of helpful things to get you started on the ground running.
+## Documentation for AI-agent osprey
 
-### GitHub Actions `.github/workflows/build-app.yml`
+- Framework: https://als-apg.github.io/osprey
+- Tutorial: [Building Your First Capability](https://als-apg.github.io/osprey/developer-guides/building-first-capability.html)
 
-Automate linting, pytest, and mkdocs when you push changes to GitHub.
+## Copyright Notice
 
-### MkDocs
+MLExchange Copyright (c) 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Dept. of Energy). All rights reserved.
 
-Create nice documentation with MkDocs and deploy it directly in your repository (Note: Your repository must be set to `public`).
+If you have questions about your rights to use or distribute this software, please contact Berkeley Lab's Intellectual Property Office at IPO@lbl.gov.
 
-### `.gitignore`
-
-Already configured with a number of common files to ignore.
-
-### `requirements.txt`
-
-List of Python dependencies, such as flake8, pytest, and mkdocs.
-
-### flake8
-
-Lint your Python code for errors with flake8.
-
-### PyTest
-
-Write unit tests with PyTest and they will run when you submit a push to GitHub.
-
-## LBNL Software Disclosure and Distribution
-
-[Here is the official lab policy regarding software disclosure and distribution,](https://commons.lbl.gov/display/rpm2/Software+Disclosure+and+Distribution#SoftwareDisclosureandDistribution--1898802862) and below you will find a summarized version. It is general good practice to keep your projects marked as `private` until you properly disclose your software through the lab.
-
-- **Purpose:**  
-  Ensure DOE compliance by reporting all software intended for external distribution to the Intellectual Property Office (IPO).
-
-- **Who Must Comply:**  
-  Berkeley Lab software developers and affiliates (employees, faculty, and on-site collaborators).
-
-- **When to Report:**  
-  - Before distributing any new or modified software.
-  - Exemptions: Already disclosed or minor updates (<25% change without added functionality).
-
-- **Key Requirements:**  
-  - **Submission:** Complete a Software Disclosure form prior to external distribution.
-  - **Licensing:**  
-    - Obtain appropriate license agreements through IPO.
-    - Prefer permissive licenses (BSD, MIT) over proprietary or viral open source licenses (e.g., GNU GPL).
-  - **Documentation:**  
-    - Record third-party licenses, contributor information, and funding sources.
-  - **Tracking:**  
-    - If distributed via personal repositories or websites, track and report download/licensing metrics annually.
-
-- **IPO Responsibilities:**  
-  Review disclosures, secure DOE approvals, manage licensing agreements, and maintain records.
-
-- **Contact:**  
-  For questions, reach out to the Licensing Manager at [ipo@lbl.gov](mailto:ipo@lbl.gov).
-
+NOTICE.  This Software was developed under funding from the U.S. Department of Energy and the U.S. Government consequently retains certain rights.  As such, the U.S. Government has been granted for itself and others acting on its behalf a paid-up, nonexclusive, irrevocable, worldwide license in the Software to reproduce, distribute copies to the public, prepare derivative works, and perform publicly and display publicly, and to permit others to do so.
