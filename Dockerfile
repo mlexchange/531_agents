@@ -1,6 +1,6 @@
 # Pull official Python image from Dockerhub
 # Check here for specific versions/tags: https://hub.docker.com/_/python/tags
-FROM python:3.11-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 # Set the working directory in the container.
 WORKDIR /app
